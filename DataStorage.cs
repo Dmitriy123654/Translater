@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
+using System.Data.OleDb;
 
 namespace laba1
 {
@@ -283,6 +284,43 @@ namespace laba1
                 Words = temp;
             }
             return Task.CompletedTask;
+        }
+        public static void AddDataToFileOfTheTranslateHistory(string query,OleDbConnection connection,string Word,string WordTranslation)
+        {
+            try
+            {
+                using (OleDbCommand command = new OleDbCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+                    command.Parameters.AddWithValue("@Time", DateTime.Now.ToString("HH:mm:ss"));
+                    command.Parameters.AddWithValue("@Word", string.Join(" ", Word));
+                    command.Parameters.AddWithValue("@Translation", string.Join(", ", WordTranslation));
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Файл с историей поврежден(\n{ex.Message})", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+        }
+        public static void CheckOrCreateTranslationHistoryFile()
+        {
+            string basePath = Application.StartupPath;
+            string filePath = Path.Combine(basePath, "translation_history.txt");
+            if (!File.Exists(filePath))
+            {
+                // Если файл не существует, создаем его и заполняем заголовками
+                using (StreamWriter writer = new StreamWriter(filePath, false, Encoding.Default))
+                {
+                    writer.WriteLine("Date,Time,Word,Translation");
+                }
+                MessageBox.Show("Файл истории переводов создан.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+/*
+            MessageBox.Show("Файл с историей поврежден", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;*/
         }
 
     }

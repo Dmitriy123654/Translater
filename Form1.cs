@@ -3,6 +3,8 @@ using System.Data.OleDb;*/
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
+using System.Text;
+using System.Text.Unicode;
 
 namespace laba1
 {
@@ -13,7 +15,7 @@ namespace laba1
         public Form1()
         {
             InitializeComponent();
-            
+
 
         }
 
@@ -29,42 +31,114 @@ namespace laba1
         private void historyButton_Click(object sender, EventArgs e)
         {
             string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
-            // string connectionString = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
             string query = "SELECT * FROM [translation_history.txt]";
+
+            string basePath = Application.StartupPath;
+            string filePath = Path.Combine(basePath, "translation_history.txt");
+
+            // Проверяем, существует ли файл
+            if (!File.Exists(filePath))
+            {
+                // Если файл не существует, создаем его и заполняем заголовками
+                using (StreamWriter writer = new StreamWriter(filePath, false, Encoding.Default))
+                {
+                    writer.WriteLine("Date,Time,Word,Translation");
+                }
+                MessageBox.Show("Файл истории переводов создан.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            // Проверяем, есть ли данные в файле
+            string[] lines = File.ReadAllLines(filePath, Encoding.Default);
+            if (lines.Length <= 1)
+            {
+                MessageBox.Show("История переводов пуста.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             using (OleDbConnection connection = new OleDbConnection(connectionString))
             {
                 connection.Open();
-                using (OleDbCommand command = new OleDbCommand(query, connection))
+                try
                 {
-                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(command))
+                    // Читаем содержимое файла в массив строк с указанием кодировки Windows-1251
+                    string[] lines2 = File.ReadAllLines("translation_history.txt", Encoding.GetEncoding(1251));
+
+                    // Создаем таблицу данных для хранения истории переводов
+                    DataTable dataTable = new DataTable();
+                    dataTable.Columns.Add("Date");
+                    dataTable.Columns.Add("Time");
+                    dataTable.Columns.Add("Word");
+                    dataTable.Columns.Add("Translation");
+
+                    int corruptedLinesCount = 0;
+
+                    // Обрабатываем каждую строку файла
+                    foreach (string line in lines2.Skip(1))
                     {
-                        DataTable dataTable = new DataTable();
-                        adapter.Fill(dataTable);
+                        string[] fields = line.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-                        // Создаем новую форму для отображения таблицы с историей переводов
-                        using (Form historyForm = new Form())
+                        // Проверяем, есть ли все необходимые поля в строке
+                        if (fields.Length == 4)
                         {
-                            historyForm.Text = "История переводов";
-                            historyForm.StartPosition = FormStartPosition.CenterParent;
-                            historyForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                            historyForm.MaximizeBox = false;
-                            historyForm.MinimizeBox = false;
+                            // Удаляем кавычки вокруг значений
+                            string date = fields[0].Trim('"');
+                            string time = fields[1].Trim('"');
+                            string word = fields[2].Trim('"');
+                            string translation = fields[3].Trim('"');
 
-                            // Создаем DataGridView и привязываем к нему данные из таблицы
-                            DataGridView dataGridView = new DataGridView();
-                            dataGridView.DataSource = dataTable;
-                            dataGridView.ReadOnly = true;
-                            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                            dataGridView.Dock = DockStyle.Fill;
-
-                            historyForm.Controls.Add(dataGridView);
-                            historyForm.ShowDialog();
+                            // Добавляем строку в таблицу данных
+                            dataTable.Rows.Add(date, time, word, translation);
+                        }
+                        else
+                        {
+                            // Увеличиваем счетчик поврежденных строк
+                            corruptedLinesCount++;
                         }
                     }
+
+                    // Проверяем количество поврежденных строк
+                    if (corruptedLinesCount > 0)
+                    {
+                        MessageBox.Show($"В файле истории переводов есть {corruptedLinesCount} поврежденных строк. Они будут исключены из отображения.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
+                    // Проверяем, пуста ли таблица
+                    if (dataTable.Rows.Count == 0)
+                    {
+                        MessageBox.Show("История переводов пуста.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    // Создаем новую форму для отображения таблицы с историей переводов
+                    using (Form historyForm = new Form())
+                    {
+                        historyForm.Text = "История переводов";
+                        historyForm.StartPosition = FormStartPosition.CenterParent;
+                        historyForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                        historyForm.MaximizeBox = false;
+                        historyForm.MinimizeBox = false;
+                        historyForm.Size = new Size(800, 600);
+
+                        // Создаем DataGridView и привязываем к нему данные из таблицы
+                        DataGridView dataGridView = new DataGridView();
+                        dataGridView.DataSource = dataTable;
+                        dataGridView.ReadOnly = true;
+                        dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                        dataGridView.Dock = DockStyle.Fill;
+                        dataGridView.Size = new Size(780, 570);
+
+                        historyForm.Controls.Add(dataGridView);
+                        historyForm.ShowDialog();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при чтении файла истории переводов: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
+
+
 
         private void ChangeLanguageButton_Click(object sender, EventArgs e)
         {
@@ -74,35 +148,35 @@ namespace laba1
             var inputText = this.inputTextBox.Text;
             string[] words = inputText.Split(new[] { "\r\n", " " }, StringSplitOptions.RemoveEmptyEntries);
             List<string> outputWords = new List<string>();
-            foreach(string word in this.OutputListBox.Items)
+            foreach (string word in this.OutputListBox.Items)
             {
                 outputWords.Add(word);
             }
             this.OutputListBox.Items.Clear();
-            foreach(string word in words)
+            foreach (string word in words)
             {
                 this.OutputListBox.Items.Add(word);
             }
             string newInputText = "";
-            foreach(string word in outputWords)
+            foreach (string word in outputWords)
             {
                 newInputText += word;
-                newInputText+= "\r\n";
+                newInputText += "\r\n";
             }
             this.inputTextBox.Text = newInputText;
             stateOfLanguage = false;
-            
+
         }
 
         private void translateButton_Click(object sender, EventArgs e)
         {
-            if (this.inputTextBox.Text.Length== 0)
+            if (this.inputTextBox.Text.Length == 0)
             {
                 string message = "Поле ввода не заполнено, пожалуйста, введите слово, требующее перевод";
                 string caption = "Ошибка";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBox.Show(message, caption, buttons);
-                return;  
+                return;
 
             }
             this.OutputListBox.Items.Clear();
@@ -128,14 +202,8 @@ namespace laba1
                     using (OleDbConnection connection = new OleDbConnection(connectionString))
                     {
                         connection.Open();
-                        using (OleDbCommand command = new OleDbCommand(query, connection))
-                        {
-                            command.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
-                            command.Parameters.AddWithValue("@Time", DateTime.Now.ToString("HH:mm:ss"));
-                            command.Parameters.AddWithValue("@Word", inputTextBox.Text);
-                            command.Parameters.AddWithValue("@Translation", string.Join(", ", translatedText.outputText));
-                            command.ExecuteNonQuery();
-                        }
+                        DataStorage.AddDataToFileOfTheTranslateHistory(query, connection, inputTextBox.Text, translatedText.outputText.First());
+
                     }
                 }
             }
@@ -152,8 +220,40 @@ namespace laba1
                 {
                     string message = "Для данного слова не был найден однозначный перевод, поэтому представлены потенциальные варианты перевода и соответствующие исходые слова";
                     string caption = "Не был найден однозначный перевод";
+
+
+
+                    string[] words = inputTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    int i = 0;
+
                     MessageBoxButtons buttons = MessageBoxButtons.OK;
                     MessageBox.Show(message, caption, buttons);
+
+                    string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
+                    string query = "INSERT INTO [translation_history.txt] ([Date], [Time], [Word], [Translation]) VALUES (?, ?, ?, ?)";
+                    using (OleDbConnection connection = new OleDbConnection(connectionString))
+                    {
+                        connection.Open();
+                        foreach (string item in translatedText.outputText)
+                        {
+                            using (OleDbCommand command = new OleDbCommand(query, connection))
+                            {
+                                DataStorage.AddDataToFileOfTheTranslateHistory(query, connection, words[i++], item);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
+                    string query = "INSERT INTO [translation_history.txt] ([Date], [Time], [Word], [Translation]) VALUES (?, ?, ?, ?)";
+
+                    using (OleDbConnection connection = new OleDbConnection(connectionString))
+                    {
+                        connection.Open();
+                        DataStorage.AddDataToFileOfTheTranslateHistory(query, connection, inputTextBox.Text, translatedText.outputText.First());
+
+                    }
                 }
                 foreach (string item in translatedText.outputText)
                 {
@@ -223,7 +323,7 @@ namespace laba1
                     Location = new Point(10, 255),
                     DialogResult = DialogResult.OK,
                     Width = 120,
-                    Height=30
+                    Height = 30
                 };
                 editDialog.Controls.Add(addButton);
 
@@ -396,7 +496,7 @@ namespace laba1
                         {
                             Text = "Сохранить",
                             Width = 100,
-                            Height= 30,
+                            Height = 30,
                             AutoSize = true,
                             Location = new Point(10, 90),
                             DialogResult = DialogResult.OK
@@ -407,7 +507,7 @@ namespace laba1
                         {
                             Text = "Отмена",
                             Location = new Point(196, 90),
-                            Height=30,
+                            Height = 30,
                             DialogResult = DialogResult.Cancel
                         };
                         addWordDialog.Controls.Add(cancelButton);
@@ -423,7 +523,7 @@ namespace laba1
                             string newWord = wordTextBox.Text;
                             string newTranslation = translationTextBox.Text;
 
-                            if(newWord == "" || newWord == null || newTranslation == "" || newTranslation == null)
+                            if (newWord == "" || newWord == null || newTranslation == "" || newTranslation == null)
                             {
                                 string message = "Одно из полей ввода не содержит информации, перепроверьте введённые даные";
                                 string caption = "Ошибка";
@@ -446,7 +546,7 @@ namespace laba1
                 }
             }
             OutputListBox.Items.Clear();
-            DataStorage.UpdateJsonFiles();  
+            DataStorage.UpdateJsonFiles();
         }
 
         private void UpdateWordList()

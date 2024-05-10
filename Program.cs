@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace laba1
 {
     internal static class Program
@@ -12,7 +14,7 @@ namespace laba1
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
-                
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             ApplicationConfiguration.Initialize();
             Application.Run(fm1);
         }

@@ -12,6 +12,7 @@ namespace laba1
         private bool stateOfLanguage = true;
         //private static DataStorage dataStorage;
         private System.ComponentModel.IContainer components = null;
+       
 
         protected override void Dispose(bool disposing)
         {
@@ -190,7 +191,7 @@ namespace laba1
             this.EditButton = new System.Windows.Forms.Button();
             this.historyButton = new System.Windows.Forms.Button();
             // Создание новой кнопки "historyButton"
-
+            
 
             // 
             // historyButton
@@ -398,6 +399,7 @@ namespace laba1
 
                
             }
+            DataStorage.CheckOrCreateTranslationHistoryFile();
         }
 
         static List<string> FindPossibleErrors(string word, Dictionary<string, string> dictionaryWords)
