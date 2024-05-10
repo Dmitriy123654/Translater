@@ -13,92 +13,8 @@ namespace laba1
         public static Dictionary<string, string> TransletedWords = new Dictionary<string, string>();
         public static string JsonPath { get; set; }
         public static string FileName { get; set; }
-        public DataStorage()
-        {
 
-            /*if (Words.Count == 0 || Words == null)
-            {
-                InitializeAsync();
-            }*/
-            // CheckingJsonFromFile();
-        }
-        private async Task InitializeAsync()
-        {
-            // Заполнение словарей русско-английскими и англо-русскими словами
-            /*Words.Add("яблоко", "apple");
-            Words.Add("кот", "cat");
-            Words.Add("собака", "dog");
-            Words.Add("стол", "table");
-            Words.Add("книга", "book");
-            Words.Add("машина", "car");
-            Words.Add("дом", "house");
-            Words.Add("ручка", "pen");
-            Words.Add("школа", "school");
-            Words.Add("окно", "window");
-            Words.Add("компьютер", "computer");
-            Words.Add("стул", "chair");
-            Words.Add("гитара", "guitar");
-            Words.Add("телефон", "phone");
-            Words.Add("молоко", "milk");
-            Words.Add("класс", "class");
-            Words.Add("книжка", "booklet");
-            Words.Add("солнце", "sun");
-            Words.Add("парк", "park");
-            Words.Add("мяч", "ball");
-            Words.Add("флаг", "flag");
-            Words.Add("река", "river");
-            Words.Add("капуста", "cabbage");
-            Words.Add("банан", "banana");
-            Words.Add("дождь", "rain");
-            Words.Add("пианино", "piano");
-            Words.Add("зонт", "umbrella");
-            Words.Add("ноутбук", "laptop");
-            Words.Add("море", "sea");
-            Words.Add("музей", "museum");
-            Words.Add("звезда", "star");
-            Words.Add("птица", "bird");
-            Words.Add("космос", "space");
-            Words.Add("пароль", "password");
-            Words.Add("луна", "moon");
-            Words.Add("снег", "snow");
-            Words.Add("футбол", "football");
-            Words.Add("носок", "sock");
-            Words.Add("зебра", "zebra");
-            Words.Add("печенье", "cookie");
-            Words.Add("гора", "mountain");
-            Words.Add("планета", "planet");
-            Words.Add("цирк", "circus");
-            Words.Add("шапка", "hat");
-            Words.Add("змея", "snake");
-            Words.Add("шоколад", "chocolate");
-            Words.Add("поезд", "train");
-            Words.Add("песня", "song");
-            Words.Add("платье", "dress");
-            Words.Add("фильм", "movie");
-            Words.Add("ящик", "box");
-            Words.Add("замок", "castle");
-            Words.Add("кто", "who");
-            Words.Add("кора", "bark");
 
-            // Заполнение англо-русского словаря на основе русско-английского
-            foreach (var entry in Words)
-            {
-                TransletedWords.Add(entry.Value, entry.Key);
-            }*/
-
-            /*JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
-
-            string russianJson = JsonSerializer.Serialize(Words, options);
-            string englishJson = JsonSerializer.Serialize(TransletedWords, options);
-
-            File.WriteAllText("Words.json", russianJson, Encoding.UTF8);
-            File.WriteAllText("TransletedWords.json", englishJson, Encoding.UTF8);*/
-
-        }
         public static bool CheckingJsonFromFile(string fileName = StandartFile)
         {
 
@@ -107,7 +23,7 @@ namespace laba1
             FileName = fileName;
             JsonPath = filePath;
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileName);
-           
+
 
             try
             {
@@ -119,7 +35,7 @@ namespace laba1
                     throw new Exception("Неверный формат названия файла словаря (Пример: Русский-Английский)");
                     return false;
                 }
-               
+
                 string reverseFileName = $"{fileNames[1]}-{fileNames[0]}.json";
                 string reverseFilePath = Path.Combine(basePath, reverseFileName);
                 string json = File.ReadAllText(JsonPath, Encoding.UTF8);
@@ -285,7 +201,7 @@ namespace laba1
             }
             return Task.CompletedTask;
         }
-        public static void AddDataToFileOfTheTranslateHistory(string query,OleDbConnection connection,string Word,string WordTranslation)
+        public static void AddDataToFileOfTheTranslateHistory(string query, OleDbConnection connection, string Word, string WordTranslation)
         {
             try
             {
@@ -298,7 +214,7 @@ namespace laba1
                     command.ExecuteNonQuery();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show($"Файл с историей поврежден(\n{ex.Message})", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -318,10 +234,8 @@ namespace laba1
                 MessageBox.Show("Файл истории переводов создан.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-/*
-            MessageBox.Show("Файл с историей поврежден", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;*/
-        }
 
+
+        }
     }
 }
