@@ -254,8 +254,10 @@ namespace laba1
             {
                 var inputVariantsText = "";
                 this.inputTextBox.Text = "";
+                string word = "";
                 foreach (var item in translatedText.primalWord)
                 {
+                    word = item;
                     inputVariantsText += item + "\r\n";
                 }
                 this.inputTextBox.Text = inputVariantsText;
@@ -294,7 +296,7 @@ namespace laba1
                     using (OleDbConnection connection = new OleDbConnection(connectionString))
                     {
                         connection.Open();
-                        DataStorage.AddDataToFileOfTheTranslateHistory(query, connection, inputTextBox.Text, translatedText.outputText.First());
+                        DataStorage.AddDataToFileOfTheTranslateHistory(query, connection, word, translatedText.outputText.First());
 
                     }
                 }
