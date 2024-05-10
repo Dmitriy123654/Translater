@@ -161,6 +161,8 @@ namespace laba1
 
                                 // Показать сообщение об успешной очистке и создании нового файла
                                 MessageBox.Show("Файл истории переводов успешно очищен.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                historyForm.Close();
+                                return;
                             }
                             catch (Exception ex)
                             {
