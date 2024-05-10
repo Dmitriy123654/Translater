@@ -191,7 +191,7 @@ namespace laba1
             this.EditButton = new System.Windows.Forms.Button();
             this.historyButton = new System.Windows.Forms.Button();
             // Создание новой кнопки "historyButton"
-            
+
 
             // 
             // historyButton
@@ -203,11 +203,9 @@ namespace laba1
             this.historyButton.Location = new System.Drawing.Point(0, 400);
             this.historyButton.Click += new EventHandler(historyButton_Click); // Добавляем обработчик события Click
 
-            
+           
 
             this.SuspendLayout();
-
-
 
             // 
             // title

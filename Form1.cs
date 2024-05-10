@@ -28,6 +28,7 @@ namespace laba1
         {
 
         }
+
         private void historyButton_Click(object sender, EventArgs e)
         {
             string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
@@ -127,7 +128,49 @@ namespace laba1
                         dataGridView.Dock = DockStyle.Fill;
                         dataGridView.Size = new Size(780, 570);
 
+                        // Создайте кнопку для очистки файла
+                        Button clearButton = new Button();
+                        clearButton.Text = "Очистить историю";
+                        clearButton.Click += ClearButton_Click;
+                        clearButton.Dock = DockStyle.Bottom;
+
+                        // Добавьте кнопку и DataGridView на форму
+                        historyForm.Controls.Add(clearButton);
                         historyForm.Controls.Add(dataGridView);
+
+                        // Обработчик события кнопки для очистки файла
+                        void ClearButton_Click(object sender, EventArgs e)
+                        {
+                            try
+                            {
+                                // Удалите существующий файл истории переводов
+                                string filePath = "translation_history.txt";
+                                if (File.Exists(filePath))
+                                {
+                                    File.Delete(filePath);
+                                }
+
+                                // Создайте новый файл истории переводов и добавьте заголовки столбцов
+                                using (StreamWriter writer = new StreamWriter(filePath, false, Encoding.Default))
+                                {
+                                    writer.WriteLine("Date,Time,Word,Translation");
+                                }
+
+                                // Очистите таблицу
+                                //dataGridView.Rows.Clear();
+
+                                // Показать сообщение об успешной очистке и создании нового файла
+                                MessageBox.Show("Файл истории переводов успешно очищен.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Показать сообщение об ошибке при очистке и создании файла
+                                //MessageBox.Show("Ошибка при очистке и создании файла истории переводов: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                historyForm.Close();
+                                return;
+                            }
+                        }
+
                         historyForm.ShowDialog();
                     }
                 }
