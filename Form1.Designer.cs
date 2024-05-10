@@ -188,7 +188,26 @@ namespace laba1
             this.ClearButton = new System.Windows.Forms.Button();
             this.SettingsButton = new System.Windows.Forms.Button();
             this.EditButton = new System.Windows.Forms.Button();
+            this.historyButton = new System.Windows.Forms.Button();
+            // Создание новой кнопки "historyButton"
+
+
+            // 
+            // historyButton
+            // 
+
+            this.historyButton.Text = "История переводов";
+            this.historyButton.Location = new Point(10, 10); // Задаем координаты кнопки на форме
+            this.historyButton.Size = new Size(125, 30); // Задаем размер кнопки
+            this.historyButton.Location = new System.Drawing.Point(0, 400);
+            this.historyButton.Click += new EventHandler(historyButton_Click); // Добавляем обработчик события Click
+
+            
+
             this.SuspendLayout();
+
+
+
             // 
             // title
             // 
@@ -303,6 +322,10 @@ namespace laba1
             this.Controls.Add(this.inputLanguageLabel);
             this.Controls.Add(this.inputTextBox);
             this.Controls.Add(this.title);
+
+            // Добавляем кнопку на форму
+            Controls.Add(historyButton);
+
             this.Name = "Form1";
             this.Text = "Переводчик";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -603,6 +626,7 @@ namespace laba1
         private Button ClearButton;
         private Button SettingsButton;
         private Button EditButton;
+        private Button historyButton;
     }
 
 }

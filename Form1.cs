@@ -1,8 +1,15 @@
+/*using System.Data;
+using System.Data.OleDb;*/
+using System.Data;
+using System.Data.OleDb;
+using System.IO;
+
 namespace laba1
 {
     public partial class Form1 : Form
     {
-        
+        OleDbConnection connection;
+
         public Form1()
         {
             InitializeComponent();
@@ -18,6 +25,45 @@ namespace laba1
         private void label3_Click(object sender, EventArgs e)
         {
 
+        }
+        private void historyButton_Click(object sender, EventArgs e)
+        {
+            string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
+            // string connectionString = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
+            string query = "SELECT * FROM [translation_history.txt]";
+
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                connection.Open();
+                using (OleDbCommand command = new OleDbCommand(query, connection))
+                {
+                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(command))
+                    {
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+
+                        // Создаем новую форму для отображения таблицы с историей переводов
+                        using (Form historyForm = new Form())
+                        {
+                            historyForm.Text = "История переводов";
+                            historyForm.StartPosition = FormStartPosition.CenterParent;
+                            historyForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                            historyForm.MaximizeBox = false;
+                            historyForm.MinimizeBox = false;
+
+                            // Создаем DataGridView и привязываем к нему данные из таблицы
+                            DataGridView dataGridView = new DataGridView();
+                            dataGridView.DataSource = dataTable;
+                            dataGridView.ReadOnly = true;
+                            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                            dataGridView.Dock = DockStyle.Fill;
+
+                            historyForm.Controls.Add(dataGridView);
+                            historyForm.ShowDialog();
+                        }
+                    }
+                }
+            }
         }
 
         private void ChangeLanguageButton_Click(object sender, EventArgs e)
@@ -75,6 +121,22 @@ namespace laba1
                 foreach (string item in translatedText.outputText)
                 {
                     this.OutputListBox.Items.Add(item);
+                    // Добавляем запись в файл истории переводов
+                    string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;;Data Source={Directory.GetCurrentDirectory()};Extended Properties='text;HDR=yes;FMT=Delimited'";
+                    string query = "INSERT INTO [translation_history.txt] ([Date], [Time], [Word], [Translation]) VALUES (?, ?, ?, ?)";
+
+                    using (OleDbConnection connection = new OleDbConnection(connectionString))
+                    {
+                        connection.Open();
+                        using (OleDbCommand command = new OleDbCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@Date", DateTime.Now.ToString("yyyy-MM-dd"));
+                            command.Parameters.AddWithValue("@Time", DateTime.Now.ToString("HH:mm:ss"));
+                            command.Parameters.AddWithValue("@Word", inputTextBox.Text);
+                            command.Parameters.AddWithValue("@Translation", string.Join(", ", translatedText.outputText));
+                            command.ExecuteNonQuery();
+                        }
+                    }
                 }
             }
             if (!translatedText.isCorrect)

@@ -358,4 +358,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-!laba1new/bin/Debug/net6.0-windows/*.json
+!bin/Debug/net6.0-windows/*.json
